@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat with ChatGPT</title>
+    <style>
+        .container {
+            width: 50%;
+            margin: 0 auto;
+            text-align: center;
+            padding-top: 50px;
+        }
+        #conversation {
+            text-align: left;
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+        }
+        form {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Chat with ChatGPT</h2>
+        <div id="conversation">
+            {% for turn in conversation %}
+                <p>{{ turn.speaker }}: {{ turn.message }}</p>
+            {% endfor %}
+        </div>
+        <form action="/submit/" method="post">
+            <label for="user_input">You:</label><br>
+            <input type="text" id="user_input" name="user_input"><br><br>
+            <input type="submit" value="Send">
+        </form>
+    </div>
+</body>
+</html>
