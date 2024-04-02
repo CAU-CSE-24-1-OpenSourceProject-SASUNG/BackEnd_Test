@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character API Demo</title>
+</head>
+<body>
+    <h1>Character API Demo</h1>
+    <h2>Get Character</h2>
+    <input type="number" id="characterIndex" placeholder="Enter character index">
+    <button onclick="getCharacter()">Get Character</button>
+
+    <!-- 새로운 요소 추가 -->
+    <div id="characterInfoContainer"></div>
+
+    <h2>Add Character</h2>
+    <input type="text" id="characterName" placeholder="Enter character name">
+    <input type="number" id="characterLevel" placeholder="Enter character level">
+    <button onclick="addCharacter()">Add Character</button>
+
+    <script>
+        function getCharacter() {
+            const index = document.getElementById("characterIndex").value;
+            fetch(`http://127.0.0.1:8000/characters/${index}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 요청한 정보를 characterInfoContainer 요소에 출력
+                    const characterInfoContainer = document.getElementById("characterInfoContainer");
+                    characterInfoContainer.innerHTML = `
+                        <h3>Character Info</h3>
+                        <p>Name: ${data.name}</p>
+                        <p>Level: ${data.level}</p>
+                    `;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function addCharacter() {
+            const name = document.getElementById("characterName").value;
+            const level = document.getElementById("characterLevel").value;
+            fetch(`http://127.0.0.1:8000/characters/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({name: name, level: parseInt(level)})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
