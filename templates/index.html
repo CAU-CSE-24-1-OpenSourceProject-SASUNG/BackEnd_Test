@@ -1,39 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Chat with ChatGPT</title>
+    <title>Chat with GPT-3.5</title>
     <style>
         .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 50%;
-            margin: 0 auto;
-            text-align: center;
-            padding-top: 50px;
-        }
-        #conversation {
-            text-align: left;
+            height: 70%;
             border: 1px solid #ccc;
-            padding: 10px;
-            height: 300px;
-            overflow-y: scroll;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box; /* 내부 padding과 border를 포함한 크기 지정 */
+            display: flex;
+            flex-direction: column; /* 세로 방향으로 요소 배치 */
+            justify-content: space-between; /* 위 아래 여백을 둠 */
         }
-        form {
-            margin-top: 20px;
+        .log-box {
+            max-height: 100%;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 10px; /* 로그 박스 내부 padding 추가 */
+            background-color: #f9f9f9; /* 로그 박스 배경색 설정 */
+        }
+        .user-message {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .gpt-message {
+            text-align: left;
+            margin-bottom: 10px;
+        }
+        .user-input-container {
+            margin-top: 10px;
+        }
+        .user-input {
+            width: calc(100% - 10px);
+            padding: 5px;
+            box-sizing: border-box; /* 내부 padding과 border를 포함한 크기 지정 */
+        }
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .input-container button {
+            padding: 5px 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Chat with ChatGPT</h2>
-        <div id="conversation">
-            {% for turn in conversation %}
-                <p>{{ turn.speaker }}: {{ turn.message }}</p>
+        <div class="log-box">
+            {% for message in conversation %}
+                {% if message.speaker == "You" %}
+                    <div class="user-message">{{ message.message }}</div>
+                {% else %}
+                    <div class="gpt-message">{{ message.message }}</div>
+                {% endif %}
             {% endfor %}
         </div>
-        <form action="/submit/" method="post">
-            <label for="user_input">You:</label><br>
-            <input type="text" id="user_input" name="user_input"><br><br>
-            <input type="submit" value="Send">
-        </form>
+        <div class="user-input-container">
+            <form action="/submit/" method="post">
+                <div class="input-container">
+                    <input class="user-input" type="text" name="user_input" placeholder="Type your message here...">
+                    <button type="submit">Send</button>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>
