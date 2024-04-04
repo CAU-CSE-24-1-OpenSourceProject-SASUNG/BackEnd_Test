@@ -20,7 +20,7 @@ class Database:
                     passwd=self.user_password,
                     database=self.db_name
                 )
-                print("MySQL Database connection successful")
+                #print("MySQL Database connection successful")
             except Error as e:
                 print(f"The error '{e}' occurred")
 
