@@ -5,12 +5,13 @@ import openai
 import os
 from database import Database
 from dotenv import load_dotenv
-#from database import *
 
 # 여기에openai 키 작성(띄어쓰기 사이에 . 추가)
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
 
 ################################### DB instructions ##############################
 
@@ -29,6 +30,7 @@ db.connect()
 
 @app.get("/DB/")
 def read_root():
+    
     query = "select * from user_inf"
     users = db.execute_read_query(query)
     return {"users": users}
@@ -36,11 +38,9 @@ def read_root():
 ####################################################################################
 
 
+#################################### Chat ##################################################################3
 
 
-#################################### Chat ##########################################
-
-templates = Jinja2Templates(directory="templates")
 conversation_history = []
 
 # 대화 시작
@@ -82,4 +82,4 @@ def generate_chat_response(conversation_history, user_input):
         print("Error: ", e)
         return "챗봇 응답 생성 중 오류가 발생했습니다."
 
-##############################################################################################
+###############################################################################################################
