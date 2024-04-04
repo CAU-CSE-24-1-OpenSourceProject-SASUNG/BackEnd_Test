@@ -1,10 +1,10 @@
-from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Form, Request, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-import openai
-import os
 from database import Database
 from dotenv import load_dotenv
+import openai
+import os
 
 # 여기에openai 키 작성(띄어쓰기 사이에 . 추가)
 openai.api_key = os.environ.get('OPENAI_API_KEY')
@@ -38,13 +38,34 @@ def read_root():
 ####################################################################################
 
 
+######################################## Log in ##########################################
+
+# 로그인 화면
+@app.get("/", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+# 로그인 시도
+@app.post("/")
+async def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    query=f"select * from id_db where ID='{username}' and pw='{password}'"
+    result = db.execute_read_query(query)
+    
+    if result:
+        return RedirectResponse(url="/start/", status_code=302)
+    else:
+        error_message = "아이디와 비밀번호가 일치하지 않습니다. 다시 입력해주세요."
+        return templates.TemplateResponse("login.html", {"request": request, "error_message": error_message})
+    
+##########################################################################################
+
 #################################### Chat ##################################################################3
 
 
 conversation_history = []
 
 # 대화 시작
-@app.get("/", response_class=HTMLResponse)
+@app.get("/start/", response_class=HTMLResponse)
 async def read_item(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "converstation":conversation_history})
 
