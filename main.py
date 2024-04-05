@@ -48,15 +48,23 @@ async def login_page(request: Request):
 # 로그인 시도
 @app.post("/")
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    query=f"select * from id_db where ID='{username}' and pw='{password}'"
+    query=f"select * from id_db where ID='{username}'"
     result = db.execute_read_query(query)
-    
     if result:
-        return RedirectResponse(url="/start/", status_code=302)
+        if result[0][1] == password:
+            return RedirectResponse(url="/start/", status_code=302)
+        else:
+            error_message = "아이디와 비밀번호가 일치하지 않습니다. 다시 입력해주세요."
+            return templates.TemplateResponse("login.html", {"request": request, "error_message": error_message})
     else:
-        error_message = "아이디와 비밀번호가 일치하지 않습니다. 다시 입력해주세요."
-        return templates.TemplateResponse("login.html", {"request": request, "error_message": error_message})
-    
+        if len(password) >= 7 and len(password) <= 10 and len(username) >= 4 and len(username) <= 10:
+            query=f"insert into id_db values('{username}', '{password}')"
+            db.execute_query(query)
+            return RedirectResponse(url="/start/", status_code=302)
+        else:
+            error_message = "비밀번호 길이를 7~10글자로 맞춰주세요."
+            return templates.TemplateResponse("login.html", {"request": request, "error_message": error_message})
+        
 ##########################################################################################
 
 #################################### Chat ##################################################################3
