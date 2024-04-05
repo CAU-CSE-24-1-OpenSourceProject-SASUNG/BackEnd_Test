@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Form, Request, HTTPException
+from fastapi import FastAPI, Form, Request, HTTPException, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from database import Database
 from dotenv import load_dotenv
 import openai
 import os
+import uuid
 
 # 여기에openai 키 작성(띄어쓰기 사이에 . 추가)
 openai.api_key = os.environ.get('OPENAI_API_KEY')
@@ -40,6 +41,9 @@ def read_root():
 
 ######################################## Log in ##########################################
 
+# 사용자 세션 관리
+session = {}
+
 # 로그인 화면
 @app.get("/", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -52,7 +56,11 @@ async def login(request: Request, username: str = Form(...), password: str = For
     result = db.execute_read_query(query)
     if result:
         if result[0][1] == password:
-            return RedirectResponse(url="/start/", status_code=302)
+            session_id = str(uuid.uuid4())
+            session[session_id] = {"username": username}
+            response = RedirectResponse(url="/start/", status_code=302)
+            response.set_cookie(key="session_id", value=session_id)
+            return response
         else:
             error_message = "아이디와 비밀번호가 일치하지 않습니다. 다시 입력해주세요."
             return templates.TemplateResponse("login.html", {"request": request, "error_message": error_message})
@@ -60,9 +68,13 @@ async def login(request: Request, username: str = Form(...), password: str = For
         if len(password) >= 7 and len(password) <= 10 and len(username) >= 4 and len(username) <= 10:
             query=f"insert into id_db values('{username}', '{password}')"
             db.execute_query(query)
-            return RedirectResponse(url="/start/", status_code=302)
+            session_id = str(uuid.uuid4())
+            session[session_id] = {"username": username}
+            response = RedirectResponse(url="/start/", status_code=302)
+            response.set_cookie(key="session_id", value=session_id)
+            return response
         else:
-            error_message = "비밀번호 길이를 7~10글자로 맞춰주세요."
+            error_message = "아이디 길이를 4~10글자, 비밀번호 길이를 7~10글자로 맞춰주세요."
             return templates.TemplateResponse("login.html", {"request": request, "error_message": error_message})
         
 ##########################################################################################
@@ -74,8 +86,11 @@ conversation_history = []
 
 # 대화 시작
 @app.get("/start/", response_class=HTMLResponse)
-async def read_item(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "converstation":conversation_history})
+async def read_item(request: Request, session_id: str = Cookie(None)):
+    if session_id in session:
+        return templates.TemplateResponse("index.html", {"request": request, "converstation":conversation_history})
+    else:
+        return RedirectResponse(url="/", status_code=302)
 
 # 사용자 입력 처리 -> ChatGPT 응답 생성
 @app.post("/submit/")
